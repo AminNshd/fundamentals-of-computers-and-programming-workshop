@@ -65,10 +65,9 @@ python Movies.py
 
 ## 🛠 Tech Stack
 
-* **Languages:** Python 3.x
+* **Language:** Python 3.x
 * **Libraries:** `networkx`, `matplotlib`, `random`, `json`, `time`
 * **Approach:** All algorithms and data structures (Graphs, Search Trees, Matrices) are implemented from scratch to demonstrate an understanding of computer science fundamentals.
 
-**Developer:** Amirhossein Noshadi
 
-**Date:** February 2023 (Bahman 1401)
+## **Date:** February 2023 (Bahman 1401)
