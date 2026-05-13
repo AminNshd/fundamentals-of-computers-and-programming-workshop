@@ -1,0 +1,172 @@
+import random
+import time
+
+
+class Cell:
+    def __init__(self):
+        self.type = ''
+        self.val = ''
+        self.tempVal = ''
+
+
+class Car:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.direction = ''
+
+
+def next_step(cells, cars):
+    for car in cars:
+        move(cells, car)
+    print_grid(cells)
+
+
+def print_grid(cells):
+    print("  | ↑ ↓ ↑ ↓ ↑ ↓ ↑ ↓ ↑ ↓ ↑ ↓ ↑ ↓ ↑ ↓ ↑ ↓ ↑ ↓ |")
+    print("--|-----------------------------------------|")
+    for i in range(20):
+        if i % 2 == 0:
+            print("→ |", end='')
+        else:
+            print("← |", end='')
+        for j in range(20):
+            print(" " + cells[i][j].tempVal, end='')
+        print(" |")
+    print("--|-----------------------------------------|")
+
+
+def move(cells, car):
+    if cells[car.x][car.y].tempVal == '*':
+        cells[car.x][car.y].tempVal = cells[car.x][car.y].val
+
+    if cells[car.x][car.y].type == "SQUARE":
+        displacement = 0
+        direction = random.randint(0, 3)
+        if direction == 0:  # up
+            displacement = car.y % 2
+            car.y += displacement
+            car.direction = 'V'
+        elif direction == 1:  # left
+            displacement = (car.x + 1) % 2
+            car.x -= displacement
+            car.direction = 'H'
+        elif direction == 2:  # down
+            displacement = (car.y + 1) % 2
+            car.y -= displacement
+            car.direction = 'V'
+        elif direction == 3:  # right
+            displacement = car.x % 2
+            car.x += displacement
+            car.direction = 'H'
+        if displacement == 1:
+            cells[car.x][car.y].tempVal = '*'
+            return
+
+    elif cells[car.x][car.y].type == "CROSS":
+        direction = random.randint(0, 1)
+        if direction == 0:  # Horizontal
+            car.direction = 'H'
+        elif direction == 1:  # Vertical
+            car.direction = 'V'
+
+    if car.direction == 'H':
+        car.y += int(pow(-1, car.x))
+        if car.y < 0:
+            car.y = 0
+            car.direction = 'V'
+            move(cells, car)
+        elif car.y > 19:
+            car.y = 19
+            car.direction = 'V'
+            move(cells, car)
+    elif car.direction == 'V':
+        car.x -= int(pow(-1, car.y))
+        if car.x < 0:
+            car.x = 0
+            car.direction = 'H'
+            move(cells, car)
+        elif car.x > 19:
+            car.x = 19
+            car.direction = 'H'
+            move(cells, car)
+    cells[car.x][car.y].tempVal = '*'
+
+
+def main():
+    numberOfCars = int(input("Enter the number of cars (shown as *): "))
+    numberOfSquares = int(input("Enter the number of squares (shown as @): "))
+    numberOfCrosses = int(input("Enter the number of crosses (shown as #): "))
+
+    cells = [[Cell() for _ in range(20)] for _ in range(20)]
+    cars = []
+
+    for x in range(20):
+        for y in range(20):
+            cells[x][y].val = ' '
+            cells[x][y].tempVal = ' '
+            if x == 0 or x == 19 or y == 0 or y == 19:
+                cells[x][y].type = "LEGAL_0"
+            else:
+                cells[x][y].type = "LEGAL_2"
+
+    i = 0
+    while i < numberOfSquares:
+        x = random.randint(0, 19)
+        y = random.randint(0, 19)
+
+        if cells[x][y].type == "LEGAL_2":
+            for j in range(-1, 2):
+                for k in range(-1, 2):
+                    if cells[x + j][y + k].type == "LEGAL_2":
+                        cells[x + j][y + k].type = "LEGAL_1"
+            cells[x][y].val = '@'
+            cells[x][y].tempVal = '@'
+            cells[x][y].type = "SQUARE"
+            i += 1
+
+    i = 0
+    while i < numberOfCrosses:
+        x = random.randint(0, 19)
+        y = random.randint(0, 19)
+        if cells[x][y].type == "LEGAL_2" or cells[x][y].type == "LEGAL_1":
+            for j in range(-1, 2):
+                for k in range(-1, 2):
+                    if cells[x + j][y + k].type == "LEGAL_2":
+                        cells[x + j][y + k].type = "LEGAL_1"
+            cells[x][y].val = '#'
+            cells[x][y].tempVal = '#'
+            cells[x][y].type = "CROSS"
+            i += 1
+
+    i = 0
+    while i < numberOfCars:
+        x = random.randint(0, 19)
+        y = random.randint(0, 19)
+
+        if cells[x][y].tempVal == '*':
+            continue
+        else:
+            cells[x][y].tempVal = '*'
+        cars.append(Car(x, y))
+        if random.randint(0, 1) == 0:
+            cars[i].direction = 'H'
+        else:
+            cars[i].direction = 'V'
+        i += 1
+
+    print_grid(cells)
+
+    iteration = int(input("How many iterations do you want to see? "))
+    print("Let's Go")
+    time.sleep(1)
+
+    for i in range(iteration):
+        print("Iteration", i + 1, ":")
+        print("---------------------------------------------")
+        next_step(cells, cars)
+        time.sleep(2.5)
+
+
+if __name__ == '__main__':
+    main()
