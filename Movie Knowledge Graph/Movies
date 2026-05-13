@@ -1,0 +1,235 @@
+import json
+import networkx as nx
+import matplotlib.pyplot as plt
+
+def listof(list1, list2):
+    d = dict()
+    for i in range(len(list1)):
+        d[list1[i]] = []
+    for i in range(len(list1)):
+        if list2[i] not in d[list1[i]]:
+            d[list1[i]].append(list2[i])
+    return d
+
+def once(list):
+    lst = []
+    for i in list:
+        if i not in lst:
+            lst.append(i)
+    return lst
+
+def AdjacencyMatrix(list1, list2):
+    list11 = once(list1)
+    list22 = once(list2)
+    A = listof(list1, list2)
+    res = []
+    lst = []
+    for i in list11:
+        res.append(lst)
+        lst = []
+        for j in list22:
+            if j in A[i]:
+                lst.append(int(1))
+            else:
+                lst.append(int(0))
+    res.pop(0)
+    lst = []
+    for j in list22:
+        if j in A[list11[-1]]:
+            lst.append(int(1))
+        else:
+            lst.append(int(0))
+    res.append(lst)
+    return res
+def print_AdjacencyMatrix(list1, list2):
+    list11 = once(list1)
+    list22 = once(list2)
+    A = listof(list1, list2)
+    res = []
+    lst = []
+    for i in list11:
+        res.append(lst)
+        lst = []
+        for j in list22:
+            if j in A[i]:
+                lst.append(int(1))
+            else:
+                lst.append(int(0))
+    res.pop(0)
+    lst = []
+    for j in list22:
+        if j in A[list11[-1]]:
+            lst.append(int(1))
+        else:
+            lst.append(int(0))
+    res.append(lst)
+    for i in range(len(list22)):
+        print(i, list22[i], end=" ")
+    print("\n")
+    for i in range(len(res)):
+        n = len(list11[i])
+        n = 33 - n
+        print(i, list11[i],  n*" ",res[i], "\n")
+
+def search(name ,name1, name2):
+    res = list()
+    name11 = once(name1)
+    name22 = once(name2)
+    A = AdjacencyMatrix(name1, name2)
+    n = name11.index(name)
+    l = len(name22)
+    for i in range(l):
+        if A[n][i] == 1:
+            x = name22[i]
+            res.append(x)
+    return res
+
+def plot_graph(list1, list2):
+        list11 = once(list1)
+        list22 = once(list2)
+        adj_matrix = AdjacencyMatrix(list1, list2)
+        G = nx.DiGraph()
+        G.add_nodes_from(list1, bipartite=0)  
+        G.add_nodes_from(list2, bipartite=1)  
+        for i in range(len(list11)):
+            for j in range(len(list22)):
+                if adj_matrix[i][j] == 1:
+                    G.add_edge(list22[j], list11[i])
+        pos = nx.bipartite_layout(G, list1)
+        name_list1 = [k for k,v in locals().items() if v == list1[0]]
+        name_list2 = [k for k,v in locals().items() if v == list2[0]]
+        plt.figure(figsize=(16, 10))
+        nx.draw_networkx(G, pos, with_labels=True, node_size=1000, node_color='lightblue', edge_color='darkblue', font_size=12)
+        plt.title("Knowledge Graph")
+        plt.axis('off')
+        plt.show()
+##########################################
+
+f = open('x.json')
+data = json.load(f)
+dataset = []
+for i in data['movieData']:
+    a = i["name"]
+    b = i["actors"]
+    c = i["directors"]
+    d = str(i["year"])
+    e = i["genre"]
+    y = [a,b,c,d,e]
+    dataset.append(y)
+
+# Dataset Bazigar Kargardan
+act_dir = []
+for i in dataset:
+    for act in i[1]:
+        a = act
+        b = i[0]
+        c = i[2][0]
+        d = i[3]
+        e = i[4]
+        lst = [a, b, c, d, e]
+        act_dir.append(lst)
+act_dir = sorted(act_dir, key = lambda x: x[0]) 
+movie = list()
+directors = list()
+actors = list()
+year = list()
+for i in range(len(act_dir)):
+    actors.append(act_dir[i][0])   
+    movie.append(act_dir[i][1])
+    directors.append(act_dir[i][2])
+    year.append(act_dir[i][3])
+
+# Film Genre Kargardan
+genre_movies = []
+for i in dataset:
+    x = i[4]
+    x = x.split(",")
+    for gen in x:
+        a = gen
+        b = i[0]
+        lst = [a, b]
+        genre_movies.append(lst)
+genre_movies = sorted(genre_movies, key = lambda x: x[0]) 
+gmovies = list()
+genre = list()
+for i in range(len(genre_movies)):
+    genre.append(genre_movies[i][0])
+    gmovies.append(genre_movies[i][1])
+
+
+
+def plot_search_graph(name ,name1 ,name2):
+    A=search(name, name1, name2)
+    print(A)
+    lst=list()
+    for i in range(len(A)):
+        lst.append(name)
+    plot_graph(lst,A)
+
+
+
+################################################
+#ui
+
+
+while True:
+    opt = int(input('''welcome.
+please choose an option:
+1) Show all the movies of a director
+2) Show all the movies of an actor
+3) Show all the directors that an actor has collaborated with
+4) Show all the actor that an directors has collaborated with
+5) Show the actors that played in a movie
+6) Show all the directors who made a similar movie
+7) Show all the movies than have been made in a year
+8) Show all the movies of a genre
+
+11) Movie-Director knowledge graph
+12) Movie-actor knowledge graph
+13) Actor-Director knowledge graph
+14) Movie-Genre knowledge graph
+15) Movie-Year knowledge graph
+
+0) Exit! 
+
+ >>  '''))
+
+    if opt == 0:
+        break
+    elif opt >= 1 and opt < 9  :
+        name = input("Please ENTER the input\n >> ")
+
+        if opt == 1:
+            print(plot_search_graph(name, directors, movie))
+        elif opt == 2:
+            print(plot_search_graph(name, actors, movie))
+        elif opt == 3:
+            print(plot_search_graph(name, actors, directors))
+        elif opt == 4:
+            print(plot_search_graph(name, directors, actors))
+        elif opt == 5:
+            print(plot_search_graph(name, movie, actors))
+        elif opt == 6:
+            print(plot_search_graph(name, movie, directors))
+        elif opt == 7:
+            print(plot_search_graph(name, year, movie))
+        elif opt == 8:
+            print(plot_search_graph(name, genre, gmovies))
+    elif opt >= 11 and opt < 16 :
+        if opt == 11:
+            print_AdjacencyMatrix(movie, directors)
+            print(plot_graph(movie, directors))
+        elif opt == 12:
+            print_AdjacencyMatrix(movie, actors)
+            print(plot_graph(movie, actors))
+        elif opt == 13:
+            print_AdjacencyMatrix(directors,actors )
+            print(plot_graph(directors, actors))
+        elif opt == 14:
+            print_AdjacencyMatrix(gmovies, genre)
+            print(plot_graph(gmovies, genre))
+        elif opt == 15:
+            print_AdjacencyMatrix(movie, year)
+            print(plot_graph(movie, year))
+    else:
+        print("Invalid input!\n [Please try agian]\n\n")
